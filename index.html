@@ -1297,6 +1297,7 @@
     </script>
     <!-- Firebase SDKs & Subscription System -->
 <!-- Firebase SDKs & Advanced Admin Management System -->
+<!-- Firebase SDKs & Advanced Admin Management System -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc, getDocs, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -1316,9 +1317,9 @@
 
   // معرّف العميل لهذه النسخة ورمز المرور السري الخاص بك
   const CLIENT_ID = "client_001"; 
-  const ADMIN_PASSCODE = "123456"; // يمكنك تغيير رمز المرور هنا
+  const ADMIN_PASSCODE = "123456"; // رمز المرور الخاص بك كـ Super Admin
 
-  // فحص حالة الاشتراك
+  // فحص حالة الاشتراك عند فتح التطبيق
   async function checkSubscription() {
     try {
       const timeResponse = await fetch('https://worldtimeapi.org/api/ip');
@@ -1386,7 +1387,6 @@
       return;
     }
 
-    // جلب جميع المشتركين من Firestore
     const querySnapshot = await getDocs(collection(db, "subscriptions"));
     let clientsHtml = "";
 
@@ -1401,7 +1401,7 @@
           <td style="padding: 10px; text-align: center;">${data.expiryDate || 'غير محدد'}</td>
           <td style="padding: 10px; text-align: center;">${statusText}</td>
           <td style="padding: 10px; text-align: center;">
-            <button onclick="editClientData('${id}', '${data.clientName || ''}', '${data.expiryDate || ''}', ${data.isActive})" style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin-bottom: 4px;">تعديل / تمديد</button>
+            <button onclick="editClientData('${id}', '${data.clientName || ''}', '${data.expiryDate || ''}', ${data.isActive})" style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer;">تعديل / تمديد</button>
           </td>
         </tr>
       `;
@@ -1486,6 +1486,29 @@
     }
   };
 
-  // تشغيل الفحص
+  // دالة حقن زر لوحة الأدمن داخل نافذة الإعدادات تلقائياً
+  function injectAdminButtonInSettings() {
+    const settingsModal = document.querySelector('#settingsModal, .settings-modal, #settings-page, [id*="settings"]');
+    if (settingsModal && !document.getElementById('super-admin-settings-btn')) {
+      const btn = document.createElement('button');
+      btn.id = 'super-admin-settings-btn';
+      btn.innerHTML = '👑 لوحة إدارة المشتركين (Super Admin)';
+      btn.style.cssText = `
+        width: 100%; background: #0f172a; color: #38bdf8; border: 1px solid #38bdf8;
+        padding: 12px; margin-top: 15px; border-radius: 8px; font-weight: bold;
+        cursor: pointer; text-align: center; font-family: inherit;
+      `;
+      btn.onclick = window.openAdminPanel;
+      
+      const container = settingsModal.querySelector('.modal-body, .settings-content') || settingsModal;
+      container.appendChild(btn);
+    }
+  }
+
+  // تشغيل المراقبة لتثبيت الزر عند فتح قائمة الإعدادات
+  const observer = new MutationObserver(injectAdminButtonInSettings);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // تشغيل فحص الاشتراك عند التحميل
   window.addEventListener('DOMContentLoaded', checkSubscription);
 </script>
