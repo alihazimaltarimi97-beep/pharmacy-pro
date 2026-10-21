@@ -45,7 +45,7 @@
             
             <div class="mb-6">
                 <div class="relative">
-                    <input type="text" id="store-search" oninput="renderStoreProducts()" placeholder="ابحث عن دواء أو منتج..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:border-primary-500">
+                    <input type="text" id="store-search" oninput="renderStoreProducts()" placeholder="ابحث عن دواء أو صنف..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:border-primary-500">
                     <i class="fa-solid fa-search absolute right-3.5 top-4 text-slate-400"></i>
                 </div>
             </div>
@@ -92,7 +92,7 @@
                     </div>
                     <div>
                         <h1 id="app-brand-title" class="font-bold text-lg text-white">إدارة الصيدلية المتقدم</h1>
-                        <p class="text-xs text-slate-400">النظام الشامل للمخزون والمبيعات والعملاء</p>
+                        <p class="text-xs text-slate-400">النظام الشامل للمخزون والمبيعات والأصناف والعملاء</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 space-x-reverse">
@@ -101,10 +101,10 @@
                     </button>
                 </div>
             </div>
-            <!-- الأقسام الرئيسية -->
+            <!-- الأقسام الرئيسية (شاملة الأصناف والمخزون وباقي الأقسام) -->
             <nav class="bg-slate-800/80 backdrop-blur border-t border-slate-700/50 overflow-x-auto">
                 <div class="container mx-auto px-4 flex space-x-1 space-x-reverse py-2">
-                    <button onclick="switchTab('inventory')" id="btn-tab-inventory" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold bg-primary-600 text-white transition whitespace-nowrap"><i class="fa-solid fa-boxes-stacked ml-1"></i> المخزون</button>
+                    <button onclick="switchTab('inventory')" id="btn-tab-inventory" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold bg-primary-600 text-white transition whitespace-nowrap"><i class="fa-solid fa-boxes-stacked ml-1"></i> المخزون والأصناف</button>
                     <button onclick="switchTab('orders')" id="btn-tab-orders" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-cash-register ml-1"></i> نقطة البيع والطلبات</button>
                     <button onclick="switchTab('reports')" id="btn-tab-reports" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-chart-line ml-1"></i> التقارير المالية</button>
                     <button onclick="switchTab('notes')" id="btn-tab-notes" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-700 transition whitespace-nowrap"><i class="fa-solid fa-note-sticky ml-1"></i> الملاحظات الإدارية</button>
@@ -117,15 +117,24 @@
         <!-- المحتوى الرئيسي -->
         <main class="container mx-auto px-4 py-6 flex-grow">
 
-            <!-- 1. قسم المخزون -->
+            <!-- 1. قسم المخزون والأصناف -->
             <div id="tab-inventory" class="tab-content active space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-800 p-4 rounded-2xl border border-slate-700">
-                    <div class="relative w-full sm:w-72">
-                        <input type="text" id="search-inventory" oninput="renderInventory()" placeholder="بحث عن دواء، شركة، أو باركود..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 pr-10 text-sm text-white focus:outline-none focus:border-primary-500">
-                        <i class="fa-solid fa-search absolute right-3.5 top-3.5 text-slate-400"></i>
+                    <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="search-inventory" oninput="renderInventory()" placeholder="بحث عن دواء، شركة، صنف..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 pr-10 text-sm text-white focus:outline-none focus:border-primary-500">
+                            <i class="fa-solid fa-search absolute right-3.5 top-3.5 text-slate-400"></i>
+                        </div>
+                        <select id="filter-category" onchange="renderInventory()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary-500">
+                            <option value="">جميع الأصناف والتصنيفات</option>
+                            <option value="أدوية عامة">أدوية عامة</option>
+                            <option value="مضادات حيوية">مضادات حيوية</option>
+                            <option value="فيتامينات ومكملات">فيتامينات ومكملات</option>
+                            <option value="عناية ومستحضرات">عناية ومستحضرات</option>
+                        </select>
                     </div>
                     <button onclick="openProductModal()" class="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-lg shadow-primary-600/30">
-                        <i class="fa-solid fa-plus ml-1"></i> إضافة دواء جديد
+                        <i class="fa-solid fa-plus ml-1"></i> إضافة دواء / صنف جديد
                     </button>
                 </div>
 
@@ -135,6 +144,7 @@
                             <thead>
                                 <tr class="bg-slate-900/60 text-slate-400 text-xs uppercase border-b border-slate-700">
                                     <th class="p-4">اسم الدواء</th>
+                                    <th class="p-4">الصنف / التصنيف</th>
                                     <th class="p-4">الشركة / المادة</th>
                                     <th class="p-4">سعر الشراء</th>
                                     <th class="p-4">سعر البيع</th>
@@ -226,7 +236,7 @@
                     </div>
                 </div>
 
-                <!-- جدول تفاصيل المبيعات الفواتير -->
+                <!-- جدول تفاصيل المبيعات والفواتير -->
                 <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
                     <div class="p-4 border-b border-slate-700 font-bold text-white">سجل العمليات والفواتير</div>
                     <div class="overflow-x-auto">
@@ -331,12 +341,18 @@
         </main>
     </div>
 
-    <!-- نافذة منبثقة لإضافة/تعديل دواء -->
+    <!-- نافذة منبثقة لإضافة/تعديل دواء أو صنف -->
     <div id="product-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <h3 id="product-modal-title" class="text-xl font-bold text-white">إضافة دواء جديد للمخزون</h3>
+            <h3 id="product-modal-title" class="text-xl font-bold text-white">إضافة دواء أو صنف جديد للمخزون</h3>
             <input type="hidden" id="edit-product-id">
-            <input type="text" id="prod-name" placeholder="اسم الدواء..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500">
+            <input type="text" id="prod-name" placeholder="اسم الدواء / المنتج..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500">
+            <select id="prod-category" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500">
+                <option value="أدوية عامة">أدوية عامة</option>
+                <option value="مضادات حيوية">مضادات حيوية</option>
+                <option value="فيتامينات ومكملات">فيتامينات ومكملات</option>
+                <option value="عناية ومستحضرات">عناية ومستحضرات</option>
+            </select>
             <input type="text" id="prod-company" placeholder="الشركة المصنعة / المادة الفعالة..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500">
             <div class="grid grid-cols-2 gap-3">
                 <input type="number" id="prod-buy-price" placeholder="سعر الشراء" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500">
@@ -348,7 +364,7 @@
             </div>
             <div class="flex justify-end gap-3 pt-2">
                 <button onclick="closeProductModal()" class="bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl font-semibold">إلغاء</button>
-                <button onclick="saveProduct()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-semibold">حفظ الدواء</button>
+                <button onclick="saveProduct()" class="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-semibold">حفظ العنصر</button>
             </div>
         </div>
     </div>
@@ -413,10 +429,11 @@
 
     <!-- جافاسكريبت النظام البرمجي المتكامل -->
     <script>
-        // الذاكرة المحلية والبيانات
+        // الذاكرة المحلية والبيانات الشاملة (مع دعم الأصناف والتصنيفات)
         let inventory = JSON.parse(localStorage.getItem('ph_inventory')) || [
-            { id: 1, name: 'باراسيتامول 500 مغ', company: 'الشرق الأوسط', buyPrice: 1000, sellPrice: 1500, qty: 50, expiry: '2027-06-30' },
-            { id: 2, name: 'أموكسيسيلين 250 مغ', company: 'سامراء', buyPrice: 2500, sellPrice: 3500, qty: 30, expiry: '2026-12-31' }
+            { id: 1, name: 'باراسيتامول 500 مغ', category: 'أدوية عامة', company: 'الشرق الأوسط', buyPrice: 1000, sellPrice: 1500, qty: 50, expiry: '2027-06-30' },
+            { id: 2, name: 'أموكسيسيلين 250 مغ', category: 'مضادات حيوية', company: 'سامراء', buyPrice: 2500, sellPrice: 3500, qty: 30, expiry: '2026-12-31' },
+            { id: 3, name: 'فيتامين سي فوار', category: 'فيتامينات ومكملات', company: 'باير', buyPrice: 4000, sellPrice: 6000, qty: 20, expiry: '2028-01-15' }
         ];
         let orders = JSON.parse(localStorage.getItem('ph_orders')) || [];
         let adminNotes = JSON.parse(localStorage.getItem('ph_admin_notes')) || [];
@@ -478,22 +495,29 @@
             window.location.href = window.location.pathname;
         }
 
-        // --- إدارة المخزون ---
+        // --- إدارة المخزون والأصناف ---
         function renderInventory() {
             const query = document.getElementById('search-inventory').value.toLowerCase();
+            const selectedCategory = document.getElementById('filter-category').value;
             const tbody = document.getElementById('inventory-table-body');
             tbody.innerHTML = '';
             
-            const filtered = inventory.filter(p => p.name.toLowerCase().includes(query) || p.company.toLowerCase().includes(query));
+            const filtered = inventory.filter(p => {
+                const matchesQuery = p.name.toLowerCase().includes(query) || p.company.toLowerCase().includes(query) || (p.category && p.category.toLowerCase().includes(query));
+                const matchesCategory = !selectedCategory || p.category === selectedCategory;
+                return matchesQuery && matchesCategory;
+            });
+
             if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">لا توجد أدوية مطابقة للبحث.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">لا توجد أدوية أو أصناف مطابقة للبحث.</td></tr>`;
                 return;
             }
 
-            filtered.forEach((p, index) => {
+            filtered.forEach((p) => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/40 transition">
                         <td class="p-4 font-bold text-white">${p.name}</td>
+                        <td class="p-4"><span class="bg-slate-700 text-slate-200 px-2 py-0.5 rounded text-xs">${p.category || 'عام'}</span></td>
                         <td class="p-4 text-slate-300">${p.company}</td>
                         <td class="p-4">${p.buyPrice} د.ع</td>
                         <td class="p-4">${p.sellPrice} د.ع</td>
@@ -511,12 +535,13 @@
         function openProductModal() {
             document.getElementById('edit-product-id').value = '';
             document.getElementById('prod-name').value = '';
+            document.getElementById('prod-category').value = 'أدوية عامة';
             document.getElementById('prod-company').value = '';
             document.getElementById('prod-buy-price').value = '';
             document.getElementById('prod-sell-price').value = '';
             document.getElementById('prod-qty').value = '';
             document.getElementById('prod-expiry').value = '';
-            document.getElementById('product-modal-title').innerText = 'إضافة دواء جديد للمخزون';
+            document.getElementById('product-modal-title').innerText = 'إضافة دواء أو صنف جديد للمخزون';
             document.getElementById('product-modal').classList.remove('hidden');
         }
 
@@ -527,20 +552,21 @@
         function saveProduct() {
             const id = document.getElementById('edit-product-id').value;
             const name = document.getElementById('prod-name').value.trim();
+            const category = document.getElementById('prod-category').value;
             const company = document.getElementById('prod-company').value.trim();
             const buyPrice = parseFloat(document.getElementById('prod-buy-price').value) || 0;
             const sellPrice = parseFloat(document.getElementById('prod-sell-price').value) || 0;
             const qty = parseInt(document.getElementById('prod-qty').value) || 0;
             const expiry = document.getElementById('prod-expiry').value;
 
-            if(!name) { alert('يرجى إدخال اسم الدواء'); return; }
+            if(!name) { alert('يرجى إدخال اسم الدواء أو الصنف'); return; }
 
             if(id) {
                 const p = inventory.find(item => item.id == id);
-                if(p) { p.name = name; p.company = company; p.buyPrice = buyPrice; p.sellPrice = sellPrice; p.qty = qty; p.expiry = expiry; }
+                if(p) { p.name = name; p.category = category; p.company = company; p.buyPrice = buyPrice; p.sellPrice = sellPrice; p.qty = qty; p.expiry = expiry; }
             } else {
                 const newId = inventory.length > 0 ? Math.max(...inventory.map(i => i.id)) + 1 : 1;
-                inventory.push({ id: newId, name, company, buyPrice, sellPrice, qty, expiry });
+                inventory.push({ id: newId, name, category, company, buyPrice, sellPrice, qty, expiry });
             }
 
             localStorage.setItem('ph_inventory', JSON.stringify(inventory));
@@ -554,17 +580,18 @@
             if(!p) return;
             document.getElementById('edit-product-id').value = p.id;
             document.getElementById('prod-name').value = p.name;
+            document.getElementById('prod-category').value = p.category || 'أدوية عامة';
             document.getElementById('prod-company').value = p.company;
             document.getElementById('prod-buy-price').value = p.buyPrice;
             document.getElementById('prod-sell-price').value = p.sellPrice;
             document.getElementById('prod-qty').value = p.qty;
             document.getElementById('prod-expiry').value = p.expiry;
-            document.getElementById('product-modal-title').innerText = 'تعديل بيانات الدواء';
+            document.getElementById('product-modal-title').innerText = 'تعديل بيانات الدواء أو الصنف';
             document.getElementById('product-modal').classList.remove('hidden');
         }
 
         function deleteProduct(id) {
-            if(confirm('هل أنت متأكد من حذف هذا الدواء؟')) {
+            if(confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
                 inventory = inventory.filter(item => item.id != id);
                 localStorage.setItem('ph_inventory', JSON.stringify(inventory));
                 renderInventory();
@@ -584,7 +611,7 @@
                     <div onclick="addToPOSCart(${p.id})" class="bg-slate-900 border border-slate-700 hover:border-primary-500 rounded-xl p-3 cursor-pointer transition flex justify-between items-center">
                         <div>
                             <h4 class="font-bold text-white text-sm">${p.name}</h4>
-                            <p class="text-xs text-slate-400">${p.company} | متوفر: ${p.qty}</p>
+                            <p class="text-xs text-slate-400">${p.category || 'عام'} | متوفر: ${p.qty}</p>
                         </div>
                         <span class="text-primary-400 font-bold text-sm">${p.sellPrice} د.ع</span>
                     </div>
@@ -660,7 +687,6 @@
             let totalBuyCost = posCart.reduce((sum, item) => sum + (item.buyPrice * item.qty), 0);
             let profit = total - totalBuyCost;
 
-            // تحديث المخزون
             posCart.forEach(cartItem => {
                 let p = inventory.find(i => i.id == cartItem.id);
                 if(p) p.qty -= cartItem.qty;
@@ -693,8 +719,6 @@
             const list = document.getElementById('store-products-list');
             list.innerHTML = '';
 
-            let storeCart = [];
-
             const filtered = inventory.filter(p => p.name.toLowerCase().includes(query) && p.qty > 0);
             if(filtered.length === 0) {
                 list.innerHTML = `<p class="text-slate-500 col-span-2 text-center">لا توجد منتجات متاحة حالياً.</p>`;
@@ -706,7 +730,7 @@
                     <div class="bg-slate-900 border border-slate-700 rounded-xl p-4 flex justify-between items-center">
                         <div>
                             <h4 class="font-bold text-white">${p.name}</h4>
-                            <p class="text-xs text-slate-400">${p.company} | السعر: <span class="text-primary-400 font-bold">${p.sellPrice} د.ع</span></p>
+                            <p class="text-xs text-slate-400">${p.category || 'عام'} | السعر: <span class="text-primary-400 font-bold">${p.sellPrice} د.ع</span></p>
                         </div>
                         <button onclick="addStoreCartItem(${p.id}, '${p.name}', ${p.sellPrice})" class="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded-xl text-xs font-semibold">إضافة للسلة</button>
                     </div>
@@ -809,7 +833,7 @@
             document.getElementById('report-total-invoices').innerText = filteredOrders.length;
 
             if(filteredOrders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">لا توجد فواتير مسجلة لهذه الفتره.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">لا توجد فواتير مسجلة لهذه الفترة.</td></tr>`;
                 return;
             }
 
