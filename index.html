@@ -46,7 +46,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- شاشة تسجيل الدخول وإنشاء الحساب الآمنة (مع اختيار الجنس لتكيف الخطاب) -->
+    <!-- شاشة تسجيل الدخول وإنشاء الحساب (مع اختيار الجنس لتكيف الخطاب) -->
     <div id="auth-screen" class="fixed inset-0 z-50 bg-[#fbf8f5] flex items-center justify-center p-4">
         <div class="bg-white border border-[#e6d7c3] rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
             <div id="auth-logo-box" class="w-20 h-20 bg-[#f4ede4] rounded-2xl mx-auto flex items-center justify-center text-[#7e6041] text-3xl border border-[#e6d7c3] overflow-hidden shadow-inner">
@@ -82,67 +82,92 @@
         </div>
     </div>
 
-    <!-- نافذة متجر الزبائن العام عبر الباركود (?store=true) -->
+    <!-- واجهة متجر الزبائن العام (?store=true) بتصميم الأصناف والبطاقات الصورية الأنيقة -->
     <div id="customer-store-view" class="hidden fixed inset-0 z-50 bg-[#fbf8f5] overflow-y-auto p-4">
-        <div class="max-w-2xl mx-auto bg-white rounded-2xl p-6 shadow-2xl border border-[#e6d7c3]">
-            <div class="flex justify-between items-center mb-6 pb-4 border-b border-[#f4ede4]">
-                <h1 class="text-2xl font-bold text-[#7e6041]"><i class="fa-solid fa-store ml-2"></i> المتجر الإلكتروني للزبائن</h1>
-                <button onclick="closeStoreView()" class="text-[#9d7b55] hover:text-[#523f2b] bg-[#f4ede4] px-3 py-1.5 rounded-lg text-sm font-semibold">إغلاق</button>
+        <div class="max-w-4xl mx-auto bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-[#e6d7c3] space-y-6">
+            <div class="flex justify-between items-center pb-4 border-b border-[#f4ede4]">
+                <div>
+                    <h1 id="store-header-title" class="text-2xl font-black text-[#7e6041]"><i class="fa-solid fa-store ml-2"></i> المتجر الإلكتروني للزبائن</h1>
+                    <p class="text-xs text-slate-500">اختر الصنف واستعرض المنتجات المتاحة واطلب مباشرة</p>
+                </div>
+                <button onclick="closeStoreView()" class="text-[#9d7b55] hover:text-[#523f2b] bg-[#f4ede4] px-4 py-2 rounded-xl text-xs font-bold">إغلاق المتجر</button>
             </div>
-            <div class="mb-6">
-                <input type="text" id="store-search" oninput="renderStoreProducts()" placeholder="ابحث عن وحدة أو منتج..." class="w-full bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#b89772]">
+
+            <!-- التنقل والبحث في المتجر -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2 relative">
+                    <input type="text" id="store-search" oninput="renderStoreContent()" placeholder="ابحث عن منتج أو وحدة..." class="w-full bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl px-4 py-3 pr-10 text-sm focus:outline-none focus:border-[#b89772]">
+                    <i class="fa-solid fa-search absolute right-3.5 top-3.5 text-[#9d7b55]"></i>
+                </div>
+                <div id="store-category-filter-box">
+                    <select id="store-cat-select" onchange="renderStoreContent()" class="w-full bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl px-4 py-3 text-sm focus:outline-none">
+                        <option value="all">جميع الأصناف</option>
+                    </select>
+                </div>
             </div>
-            <div id="store-products-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"></div>
-            <div class="bg-[#fbf8f5] p-4 rounded-xl border border-[#e6d7c3] mb-6">
-                <h3 class="font-bold text-lg mb-3 text-[#7e6041]"><i class="fa-solid fa-cart-shopping ml-2"></i> سلة طلباتك</h3>
-                <div id="store-cart-items" class="space-y-2 mb-4 max-h-40 overflow-y-auto"><p class="text-slate-400 text-sm">السلة فارغة حالياً.</p></div>
-                <div class="border-t border-[#e6d7c3] pt-3 flex justify-between items-center font-bold">
+
+            <!-- شبكة عرض المنتجات والأصناف للزبون بنفس تصميم لوحة التحكم -->
+            <div id="store-products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <!-- سلة الطلبات للزبون -->
+            <div class="bg-[#fbf8f5] p-6 rounded-2xl border border-[#e6d7c3] space-y-4">
+                <h3 class="font-black text-lg text-[#7e6041]"><i class="fa-solid fa-cart-shopping ml-2"></i> سلة طلباتك</h3>
+                <div id="store-cart-items" class="space-y-2 max-h-48 overflow-y-auto pr-1"><p class="text-slate-400 text-sm">السلة فارغة حالياً.</p></div>
+                <div class="border-t border-[#e6d7c3] pt-3 flex justify-between items-center font-black text-base">
                     <span>المجموع الكلي:</span>
                     <span id="store-cart-total" class="text-[#7e6041]">0 د.ع</span>
                 </div>
             </div>
-            <div class="space-y-4">
+
+            <!-- بيانات الزبون وإرسال الواتساب -->
+            <div class="space-y-4 bg-white p-6 rounded-2xl border border-[#e6d7c3]">
+                <h3 class="font-bold text-sm text-[#523f2b]">معلومات التوصيل لإتمام الطلب</h3>
                 <input type="text" id="customer-name" placeholder="الاسم الكريم ثلاثي" class="w-full bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl px-4 py-3 text-sm focus:outline-none">
                 <input type="tel" id="customer-phone" placeholder="رقم الهاتف" class="w-full bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl px-4 py-3 text-sm focus:outline-none">
                 <textarea id="customer-address" placeholder="العنوان بالتفصيل" rows="2" class="w-full bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl px-4 py-3 text-sm focus:outline-none"></textarea>
-                <button onclick="submitCustomerOrder()" class="w-full bg-[#7e6041] hover:bg-[#644d34] text-white font-bold py-3.5 rounded-xl transition shadow-lg">
-                    <i class="fa-brands fa-whatsapp ml-2 text-xl"></i> إرسال الطلب عبر الواتساب
+                <button onclick="submitCustomerOrder()" class="w-full bg-[#7e6041] hover:bg-[#644d34] text-white font-bold py-3.5 rounded-xl transition shadow-lg text-sm">
+                    <i class="fa-brands fa-whatsapp ml-2 text-lg"></i> إرسال الطلب عبر الواتساب
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة منبثقة لعرض باركود الزبون -->
+    <!-- نافذة منبثقة لعرض باركود الزبون مع الرابط وزر النسخ -->
     <div id="qrcode-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white border border-[#e6d7c3] rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4">
-            <h3 class="text-lg font-black text-[#523f2b]">باركود متجر الزبائن</h3>
-            <p class="text-xs text-slate-500">امسح الكود بكاميرا الهاتف لفتح المتجر واستعراض المنتجات والطلب مباشرة</p>
+            <h3 class="text-lg font-black text-[#523f2b]">باركود ورابط متجر الزبائن</h3>
+            <p class="text-xs text-slate-500">امسح الكود بكاميرا الهاتف أو انسخ الرابط أدناه لفتحه مباشرة</p>
             <div id="qrcode-container" class="flex justify-center p-4 bg-[#fbf8f5] rounded-2xl border border-[#e6d7c3]"></div>
+            
+            <div class="space-y-2">
+                <input type="text" id="store-link-input" readonly class="w-full bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl px-3 py-2 text-xs text-slate-600 text-center select-all focus:outline-none">
+                <button onclick="copyStoreLink()" class="w-full bg-[#f4ede4] hover:bg-[#e6d7c3] text-[#7e6041] font-bold py-2 rounded-xl text-xs transition">
+                    <i class="fa-solid fa-copy ml-1"></i> نسخ الرابط
+                </button>
+            </div>
+
             <button onclick="closeQRCodeModal()" class="w-full bg-[#7e6041] text-white font-bold py-2.5 rounded-xl text-sm">إغلاق</button>
         </div>
     </div>
 
     <!-- لوحة التحكم الرئيسية -->
     <div id="admin-dashboard-view" class="hidden flex-col min-h-screen">
-        <!-- الهيدر العلوي -->
+        <!-- الهيدر العلوي (تم إزالة زر الطاقة وأزحنا زر الباركود لإعطاء مساحة واسعة للاسم) -->
         <header class="bg-white border-b border-[#e6d7c3] sticky top-0 z-40 shadow-sm">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <div id="header-logo-container" class="w-14 h-14 bg-[#f4ede4] rounded-2xl shadow-sm flex items-center justify-center overflow-hidden font-bold text-[#7e6041] text-xl border border-[#e6d7c3]">
+                <div class="flex items-center space-x-3 space-x-reverse min-w-0 flex-1">
+                    <div id="header-logo-container" class="w-14 h-14 bg-[#f4ede4] rounded-2xl shadow-sm flex items-center justify-center overflow-hidden font-bold text-[#7e6041] text-xl border border-[#e6d7c3] flex-shrink-0">
                         <i class="fa-solid fa-spa"></i>
                     </div>
-                    <div>
-                        <h1 id="app-brand-title" class="font-extrabold text-xl text-[#523f2b]">مركز بيت الجمال</h1>
-                        <p id="app-doctor-name" class="text-xs text-[#9d7b55]">الدكتورة صفين حيدر</p>
+                    <div class="min-w-0 pr-2">
+                        <h1 id="app-brand-title" class="font-extrabold text-lg sm:text-xl text-[#523f2b] truncate">مركز بيت الجمال</h1>
+                        <p id="app-doctor-name" class="text-xs text-[#9d7b55] truncate">الدكتورة صفين حيدر</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <!-- زر باركود الزبون الجديد بدل كلمة المتجر -->
-                    <button onclick="openQRCodeModal()" class="bg-[#f4ede4] hover:bg-[#e6d7c3] text-[#7e6041] px-3.5 py-2 rounded-xl text-xs font-bold transition border border-[#e6d7c3] flex items-center gap-1.5">
-                        <i class="fa-solid fa-qrcode"></i> باركود الزبون
-                    </button>
-                    <button onclick="logoutSystem()" class="text-rose-500 bg-rose-50 hover:bg-rose-100 p-2.5 rounded-xl text-xs font-bold transition" title="تسجيل الخروج">
-                        <i class="fa-solid fa-power-off text-base"></i>
+                <div class="flex items-center space-x-3 space-x-reverse flex-shrink-0">
+                    <!-- زر باركود الزبون بمساحة مريحة وغير محصورة -->
+                    <button onclick="openQRCodeModal()" class="bg-[#f4ede4] hover:bg-[#e6d7c3] text-[#7e6041] px-4 py-2.5 rounded-xl text-xs font-bold transition border border-[#e6d7c3] flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-qrcode text-base"></i> <span>باركود الزبون</span>
                     </button>
                 </div>
             </div>
@@ -175,7 +200,7 @@
         <!-- المحتوى الرئيسي -->
         <main class="container mx-auto px-4 py-6 flex-grow">
 
-            <!-- التنبيه (بدون كلمة ذكي) -->
+            <!-- التنبيه (تنبيه بدون كلمة ذكي) -->
             <div id="smart-stock-alert" class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl mb-6 flex items-center justify-between shadow-sm hidden">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xl"></i>
@@ -216,7 +241,7 @@
                 </div>
             </div>
 
-            <!-- 3. قسم استهلاك اليوم (مع زر تنزيل PDF) -->
+            <!-- 3. قسم استهلاك اليوم (مع خيارات تنزيل PDF يومي، أسبوعي، شهري) -->
             <div id="tab-consumption" class="tab-content space-y-6">
                 <div class="bg-white border border-[#e6d7c3] rounded-2xl p-6 shadow-sm space-y-4">
                     <h2 class="text-lg font-black text-[#523f2b]"><i class="fa-solid fa-chart-pie ml-2 text-[#7e6041]"></i> تسجيل ومتابعة استهلاك المنتجات اليومي</h2>
@@ -227,9 +252,13 @@
                     </div>
                 </div>
                 <div class="bg-white border border-[#e6d7c3] rounded-2xl p-6 shadow-sm space-y-4">
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-wrap justify-between items-center gap-3">
                         <h3 class="font-bold text-base text-[#523f2b]">سجل الاستهلاك العام</h3>
-                        <button onclick="exportConsumptionPDF()" class="bg-[#7e6041] text-white px-4 py-2 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-file-pdf ml-1"></i> تنزيل الاستهلاك PDF</button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportConsumptionPDF('daily')" class="bg-[#7e6041] text-white px-3 py-2 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-file-pdf ml-1"></i> PDF يومي</button>
+                            <button onclick="exportConsumptionPDF('weekly')" class="bg-[#7e6041] text-white px-3 py-2 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-file-pdf ml-1"></i> PDF أسبوعي</button>
+                            <button onclick="exportConsumptionPDF('monthly')" class="bg-[#7e6041] text-white px-3 py-2 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-file-pdf ml-1"></i> PDF شهري</button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right border-collapse text-sm">
@@ -240,7 +269,7 @@
                 </div>
             </div>
 
-            <!-- قسم المشتريات الجديد -->
+            <!-- قسم المشتريات الجديد (مع تنزيل PDF) -->
             <div id="tab-purchases" class="tab-content space-y-6">
                 <div class="bg-white border border-[#e6d7c3] rounded-2xl p-6 shadow-sm space-y-4">
                     <div class="flex justify-between items-center">
@@ -347,7 +376,7 @@
                 </div>
             </div>
 
-            <!-- 7. الإعدادات -->
+            <!-- 7. الإعدادات (مع زر تسجيل الخروج / الطاقة المنقول إلى هنا) -->
             <div id="tab-settings" class="tab-content space-y-6">
                 <div class="bg-white border border-[#e6d7c3] rounded-2xl p-6 shadow-sm max-w-xl mx-auto space-y-4">
                     <h2 class="text-lg font-black text-[#523f2b]"><i class="fa-solid fa-gear ml-2 text-[#7e6041]"></i> إعدادات المركز والطبيب</h2>
@@ -372,6 +401,13 @@
                         <input type="text" id="setting-whatsapp" placeholder="9647700000000" class="w-full bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl px-4 py-3 text-sm focus:outline-none">
                     </div>
                     <button onclick="saveSettings()" class="w-full bg-[#7e6041] hover:bg-[#644d34] text-white font-bold py-3.5 rounded-xl transition shadow-lg text-sm">حفظ الإعدادات الشاملة</button>
+
+                    <!-- زر تسجيل الخروج (الطاقة) المنقول للداخل بطلبك -->
+                    <div class="border-t border-[#e6d7c3] pt-4 mt-4">
+                        <button onclick="logoutSystem()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2 border border-rose-200">
+                            <i class="fa-solid fa-power-off text-base"></i> تسجيل الخروج من النظام
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -457,13 +493,15 @@
         let currentReportFilter = 'all';
         let authMode = 'login';
         let currentUserGender = 'female';
+        let storeSelectedCatId = 'all';
+        let storeCartItemsData = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             applySettingsUI();
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.get('store') === 'true') {
                 document.getElementById('customer-store-view').classList.remove('hidden');
-                renderStoreProducts();
+                initStoreView();
             } else if(sessionStorage.getItem('ph_logged') === 'true') {
                 currentUserGender = sessionStorage.getItem('ph_gender') || 'female';
                 showDashboard();
@@ -611,22 +649,29 @@
             }
         }
 
-        // --- إدارة باركود الزبون ---
+        // --- إدارة باركود الزبون مع الرابط وزر النسخ ---
         function openQRCodeModal() {
             document.getElementById('qrcode-modal').classList.remove('hidden');
             const container = document.getElementById('qrcode-container');
             container.innerHTML = '';
             const storeUrl = window.location.origin + window.location.pathname + '?store=true';
+            document.getElementById('store-link-input').value = storeUrl;
             new QRCode(container, {
                 text: storeUrl,
-                width: 180,
-                height: 180,
+                width: 160,
+                height: 160,
                 colorDark: "#3d3022",
                 colorLight: "#fbf8f5",
                 correctLevel: QRCode.CorrectLevel.H
             });
         }
         function closeQRCodeModal() { document.getElementById('qrcode-modal').classList.add('hidden'); }
+        function copyStoreLink() {
+            const copyText = document.getElementById('store-link-input');
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert('تم نسخ رابط المتجر بنجاح!');
+        }
 
         // --- الأصناف ---
         function renderCategories() {
@@ -865,12 +910,12 @@
 
         function exportPurchasesPDF() {
             const pw = window.open('', '_blank');
-            pw.document.write(`<html lang="ar" dir="rtl"><head><title>سجل المشتريات</title><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h1>${settings.pharmacyName} - سجل المشتريات</h1><table><thead><tr><th>اسم المنتج / الوحدة</th><th>سعر الشراء</th><th>الكمية المدخلة</th><th>تاريخ الإدخال</th></tr></thead><tbody>${purchases.map(i=>`<tr><td>${i.name}</td><td>${i.buyPrice} د.ع</td><td>${i.qty}</td><td>${new Date(i.date).toLocaleString()}</td></tr>`).join('')}</tbody></table></body></html>`);
+            pw.document.write(`<html lang="ar" dir="rtl"><head><title>سجل المشتريات</title><style>body{font-family:Cairo;padding:20px;}h2,p{margin:5px 0;}table{width:100%;border-collapse:collapse;margin-top:15px;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h1>${settings.pharmacyName}</h1><h2>سجل المشتريات</h2><p>الطبيب المسؤول: ${settings.doctorName}</p><p><small>تاريخ الإصدار: ${new Date().toLocaleString()}</small></p><hr><table><thead><tr><th>اسم المنتج / الوحدة</th><th>سعر الشراء</th><th>الكمية المدخلة</th><th>تاريخ الإدخال</th></tr></thead><tbody>${purchases.map(i=>`<tr><td>${i.name}</td><td>${i.buyPrice} د.ع</td><td>${i.qty}</td><td>${new Date(i.date).toLocaleString()}</td></tr>`).join('')}</tbody></table></body></html>`);
             pw.document.close();
             setTimeout(() => { pw.print(); pw.close(); }, 500);
         }
 
-        // --- قسم الاستهلاك والتنبيه (بدون كلمة ذكي) ---
+        // --- قسم الاستهلاك والتنبيه وخيارات PDF (يومي، أسبوعي، شهري) ---
         function renderConsumptionDropdown() {
             const sel = document.getElementById('consumption-prod-select');
             sel.innerHTML = '';
@@ -913,9 +958,27 @@
             });
         }
 
-        function exportConsumptionPDF() {
+        function exportConsumptionPDF(type) {
+            const now = new Date();
+            let filtered = consumptionLog.filter(log => {
+                const logDate = new Date(log.date);
+                if(type === 'daily') {
+                    return logDate.toDateString() === now.toDateString();
+                } else if(type === 'weekly') {
+                    const diffTime = Math.abs(now - logDate);
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    return diffDays <= 7;
+                } else if(type === 'monthly') {
+                    const diffTime = Math.abs(now - logDate);
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    return diffDays <= 30;
+                }
+                return true;
+            });
+
+            const typeNames = { daily: 'يومي', weekly: 'أسبوعي', monthly: 'شهري' };
             const pw = window.open('', '_blank');
-            pw.document.write(`<html lang="ar" dir="rtl"><head><title>سجل الاستهلاك اليومي</title><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h1>${settings.pharmacyName} - سجل الاستهلاك اليومي</h1><table><thead><tr><th>اسم الوحدة</th><th>الكمية المستهلكة</th><th>الوقت والتاريخ</th></tr></thead><tbody>${consumptionLog.map(i=>`<tr><td>${i.productName}</td><td>-${i.qty}</td><td>${new Date(i.date).toLocaleString()}</td></tr>`).join('')}</tbody></table></body></html>`);
+            pw.document.write(`<html lang="ar" dir="rtl"><head><title>سجل الاستهلاك ${typeNames[type]}</title><style>body{font-family:Cairo;padding:20px;}h2,p{margin:5px 0;}table{width:100%;border-collapse:collapse;margin-top:15px;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h1>${settings.pharmacyName}</h1><h2>سجل الاستهلاك (${typeNames[type]})</h2><p>الطبيب المسؤول: ${settings.doctorName}</p><p><small>تاريخ الإصدار: ${new Date().toLocaleString()}</small></p><hr><table><thead><tr><th>اسم الوحدة</th><th>الكمية المستهلكة</th><th>الوقت والتاريخ</th></tr></thead><tbody>${filtered.map(i=>`<tr><td>${i.productName}</td><td>-${i.qty}</td><td>${new Date(i.date).toLocaleString()}</td></tr>`).join('')}</tbody></table></body></html>`);
             pw.document.close();
             setTimeout(() => { pw.print(); pw.close(); }, 500);
         }
@@ -1017,27 +1080,60 @@
             alert('تم إتمام البيع بنجاح!');
         }
 
-        // --- متجر الزبائن العام عبر الباركود ---
-        function openCustomerStore() { window.location.href = window.location.pathname + '?store=true'; }
+        // --- متجر الزبائن العام عبر الباركود (تصميم الأصناف والبطاقات الأنيقة) ---
+        function initStoreView() {
+            const catSel = document.getElementById('store-cat-select');
+            catSel.innerHTML = `<option value="all">جميع الأصناف</option>`;
+            categories.forEach(c => { catSel.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
+            renderStoreContent();
+        }
+
         function closeStoreView() { window.location.href = window.location.pathname; }
 
-        function renderStoreProducts() {
+        function renderStoreContent() {
             const query = document.getElementById('store-search').value.toLowerCase();
-            const list = document.getElementById('store-products-list');
-            list.innerHTML = '';
-            const filtered = inventory.filter(p => p.name.toLowerCase().includes(query) && p.qty > 0);
-            if(filtered.length === 0) { list.innerHTML = `<p class="text-slate-400 col-span-2 text-center">لا توجد منتجات متاحة.</p>`; return; }
+            storeSelectedCatId = document.getElementById('store-cat-select').value;
+            const grid = document.getElementById('store-products-grid');
+            grid.innerHTML = '';
+
+            const filtered = inventory.filter(p => {
+                const matchesQuery = p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query));
+                const matchesCat = storeSelectedCatId === 'all' ? true : p.categoryId == storeSelectedCatId;
+                return matchesQuery && matchesCat && p.qty > 0;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<p class="text-slate-400 col-span-full text-center py-8">لا توجد منتجات متاحة حالياً.</p>`;
+                return;
+            }
+
             filtered.forEach(p => {
-                list.innerHTML += `
-                    <div class="bg-[#fbf8f5] border border-[#e6d7c3] rounded-xl p-4 flex justify-between items-center">
-                        <div><h4 class="font-bold text-[#523f2b]">${p.name}</h4><p class="text-xs text-slate-500">${p.description || ''}</p><span class="text-[#7e6041] font-bold text-sm">${p.sellPrice} د.ع</span></div>
-                        <button onclick="addStoreCart(${p.id}, '${p.name}', ${p.sellPrice})" class="bg-[#7e6041] text-white px-3 py-2 rounded-xl text-xs font-semibold">إضافة للسلة</button>
+                let catObj = categories.find(c => c.id == p.categoryId);
+                let catName = catObj ? catObj.name : 'عام';
+                let imgHtml = p.image ? `<img src="${p.image}" class="w-full h-44 object-cover rounded-2xl mb-3 shadow-sm">` : `<div class="w-full h-44 bg-[#f4ede4] rounded-2xl mb-3 flex items-center justify-center text-[#7e6041] text-3xl"><i class="fa-solid fa-pills"></i></div>`;
+                
+                grid.innerHTML += `
+                    <div class="bg-white border border-[#e6d7c3] rounded-3xl p-4 shadow-sm flex flex-col justify-between">
+                        <div>
+                            ${imgHtml}
+                            <div class="flex justify-between items-start mb-1 px-1">
+                                <h3 class="font-extrabold text-[#523f2b] text-base">${p.name}</h3>
+                                <span class="bg-[#f4ede4] text-[#7e6041] text-xs px-2 py-0.5 rounded-md font-semibold">${catName}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mb-3 px-1 line-clamp-2">${p.description || 'لا يوجد شرح مفصل.'}</p>
+                            <div class="flex justify-between text-sm font-bold text-[#7e6041] mb-3 px-1">
+                                <span>السعر: ${p.sellPrice} د.ع</span>
+                                <span class="text-emerald-600">متوفر: ${p.qty}</span>
+                            </div>
+                        </div>
+                        <button onclick="addStoreCart(${p.id}, '${p.name}', ${p.sellPrice})" class="w-full bg-[#7e6041] hover:bg-[#644d34] text-white py-2.5 rounded-xl text-xs font-bold transition">
+                            <i class="fa-solid fa-cart-plus ml-1"></i> إضافة للسلة
+                        </button>
                     </div>
                 `;
             });
         }
 
-        let storeCartItemsData = [];
         function addStoreCart(id, name, price) {
             let ex = storeCartItemsData.find(i => i.id === id);
             if(ex) ex.qty++; else storeCartItemsData.push({ id, name, price, qty: 1 });
@@ -1049,9 +1145,17 @@
             container.innerHTML = '';
             if(storeCartItemsData.length === 0) { container.innerHTML = `<p class="text-slate-400 text-sm">السلة فارغة.</p>`; document.getElementById('store-cart-total').innerText = '0 د.ع'; return; }
             let total = 0;
-            storeCartItemsData.forEach(i => {
+            storeCartItemsData.forEach((i, idx) => {
                 total += i.price * i.qty;
-                container.innerHTML += `<div class="flex justify-between items-center text-sm bg-white p-2 rounded-lg border border-[#e6d7c3]"><span>${i.name} (${i.qty})</span><span class="text-[#7e6041] font-bold">${i.price * i.qty} د.ع</span></div>`;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center text-sm bg-white p-3 rounded-xl border border-[#e6d7c3]">
+                        <div><span class="font-bold text-[#523f2b]">${i.name}</span><p class="text-xs text-slate-500">${i.price} د.ع × ${i.qty}</p></div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[#7e6041] font-bold">${i.price * i.qty} د.ع</span>
+                            <button onclick="storeCartItemsData.splice(${idx},1); renderStoreCartUI();" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
             });
             document.getElementById('store-cart-total').innerText = total + ' د.ع';
         }
@@ -1060,15 +1164,15 @@
             const name = document.getElementById('customer-name').value.trim();
             const phone = document.getElementById('customer-phone').value.trim();
             const address = document.getElementById('customer-address').value.trim();
-            if(!name || !phone || storeCartItemsData.length === 0) { alert('يرجى إكمال الحقول واختيار منتجات.'); return; }
-            let text = `*طلب جديد*%0Aالاسم: ${name}%0Aالهاتف: ${phone}%0Aالعنوان: ${address}%0A%0A*المنتجات:*%0A`;
+            if(!name || !phone || storeCartItemsData.length === 0) { alert('يرجى إكمال بيانات التوصيل وإضافة منتجات إلى السلة.'); return; }
+            let text = `*طلب جديد*%0Aالاسم: ${name}%0Aالهاتف: ${phone}%0Aالعنوان: ${address}%0A%0A*المنتجات المطلوبة:*%0A`;
             let total = 0;
             storeCartItemsData.forEach(i => { text += `- ${i.name} (${i.qty}) - ${i.price*i.qty} د.ع%0A`; total += i.price*i.qty; });
-            text += `%0A*المجموع:* ${total} د.ع`;
+            text += `%0A*المجموع الكلي:* ${total} د.ع`;
             window.open(`https://wa.me/${settings.whatsapp}?text=${text}`, '_blank');
         }
 
-        // --- التقارير والملاحظات والمواعيد (مع تنزيل PDF لكل سجل على حدة) ---
+        // --- التقارير والملاحظات والمواعيد (مع ترويسة PDF الموحدة لاسم الصيدلية والطبيبة والتاريخ) ---
         function setReportFilter(f) {
             currentReportFilter = f;
             document.querySelectorAll('.report-filter-btn').forEach(b => { b.classList.remove('bg-[#7e6041]', 'text-white'); b.classList.add('bg-[#f4ede4]', 'text-[#7e6041]'); });
@@ -1101,7 +1205,7 @@
 
         function exportReportsPDF() {
             const pw = window.open('', '_blank');
-            pw.document.write(`<html lang="ar" dir="rtl"><head><title>تقرير</title><style>body{font-family:Cairo;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h1>${settings.pharmacyName} - تقرير المبيعات</h1><table><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>المنتجات</th><th>الإجمالي</th><th>الربح</th></tr></thead><tbody>${orders.map(o=>`<tr><td>${o.id}</td><td>${new Date(o.date).toLocaleString()}</td><td>${o.items.map(i=>i.name).join(', ')}</td><td>${o.total}</td><td>${o.profit}</td></tr>`).join('')}</tbody></table></body></html>`);
+            pw.document.write(`<html lang="ar" dir="rtl"><head><title>تقرير المبيعات</title><style>body{font-family:Cairo;padding:20px;}h2,p{margin:5px 0;}table{width:100%;border-collapse:collapse;margin-top:15px;}th,td{border:1px solid #ddd;padding:8px;text-align:right;}</style></head><body><h1>${settings.pharmacyName}</h1><h2>تقرير المبيعات والفواتير</h2><p>الطبيب المسؤول: ${settings.doctorName}</p><p><small>تاريخ الإصدار: ${new Date().toLocaleString()}</small></p><hr><table><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>المنتجات</th><th>الإجمالي</th><th>الربح</th></tr></thead><tbody>${orders.map(o=>`<tr><td>${o.id}</td><td>${new Date(o.date).toLocaleString()}</td><td>${o.items.map(i=>i.name).join(', ')}</td><td>${o.total} د.ع</td><td>${o.profit} د.ع</td></tr>`).join('')}</tbody></table></body></html>`);
             pw.document.close();
             setTimeout(() => { pw.print(); pw.close(); }, 500);
         }
@@ -1133,7 +1237,7 @@
         function exportSingleNotePDF(idx) {
             const n = adminNotes[idx];
             const pw = window.open('', '_blank');
-            pw.document.write(`<html lang="ar" dir="rtl"><head><title>ملاحظة</title><style>body{font-family:Cairo;padding:30px;}</style></head><body><h1>${settings.pharmacyName}</h1><hr><h2>${n.title}</h2><p>${n.content}</p><p><small>التاريخ: ${new Date(n.date).toLocaleString()}</small></p></body></html>`);
+            pw.document.write(`<html lang="ar" dir="rtl"><head><title>ملاحظة</title><style>body{font-family:Cairo;padding:30px;}h2,p{margin:8px 0;}</style></head><body><h1>${settings.pharmacyName}</h1><p>الطبيب المسؤول: ${settings.doctorName}</p><p><small>تاريخ الإصدار: ${new Date().toLocaleString()}</small></p><hr><h2>${n.title}</h2><p>${n.content}</p></body></html>`);
             pw.document.close();
             setTimeout(() => { pw.print(); pw.close(); }, 500);
         }
@@ -1178,7 +1282,7 @@
         function exportSingleTreatmentPDF(idx) {
             const t = treatments[idx];
             const pw = window.open('', '_blank');
-            pw.document.write(`<html lang="ar" dir="rtl"><head><title>سجل المريض</title><style>body{font-family:Cairo;padding:30px;}</style></head><body><h1>${settings.pharmacyName} - سجل متابعة المريض</h1><hr><h2>المريض: ${t.name}</h2><p><strong>العلاجات والجرعات:</strong> ${t.treatments.join(', ')}</p><p><strong>المواعيد:</strong> ${t.appointments.join(' - ')}</p><p><strong>ملاحظات:</strong> ${t.notes || 'لا توجد'}</p><p><small>التاريخ: ${new Date(t.date).toLocaleString()}</small></p></body></html>`);
+            pw.document.write(`<html lang="ar" dir="rtl"><head><title>سجل المريض</title><style>body{font-family:Cairo;padding:30px;}h2,p{margin:8px 0;}</style></head><body><h1>${settings.pharmacyName}</h1><p>الطبيب المسؤول: ${settings.doctorName}</p><p><small>تاريخ الإصدار: ${new Date().toLocaleString()}</small></p><hr><h2>سجل متابعة المريض: ${t.name}</h2><p><strong>العلاجات والجرعات:</strong> ${t.treatments.join(', ')}</p><p><strong>المواعيد:</strong> ${t.appointments.join(' - ')}</p><p><strong>ملاحظات:</strong> ${t.notes || 'لا توجد'}</p></body></html>`);
             pw.document.close();
             setTimeout(() => { pw.print(); pw.close(); }, 500);
         }
@@ -1193,4 +1297,3 @@
     </script>
 </body>
 </html>
- 
