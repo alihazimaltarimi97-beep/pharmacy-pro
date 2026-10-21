@@ -1296,9 +1296,10 @@
         }
     </script>
     <!-- Firebase SDKs & Subscription System -->
+<!-- Firebase SDKs & Advanced Admin Management System -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc, getDocs, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   // إعدادات مشروعك في Firebase
   const firebaseConfig = {
@@ -1310,23 +1311,20 @@
     appId: "1:379447799209:web:90403bafe8aabb25e4a8b8"
   };
 
-  // تهيئة الفايربيس وقاعدة البيانات
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // معرف المشترك ورمز دخول الأدمن
-  const CLIENT_ID = "client_001"; // معرّف العميل
-  const ADMIN_PASSCODE = "123456"; // رمز المرور الخاص بك كـ Super Admin
+  // معرّف العميل لهذه النسخة ورمز المرور السري الخاص بك
+  const CLIENT_ID = "client_001"; 
+  const ADMIN_PASSCODE = "123456"; // يمكنك تغيير رمز المرور هنا
 
-  // فحص حالة الاشتراك عند فتح التطبيق
+  // فحص حالة الاشتراك
   async function checkSubscription() {
     try {
-      // جلب الوقت الحالي الموثوق من سيرفر عالمي لمنع التلاعب بساعة الجهاز
       const timeResponse = await fetch('https://worldtimeapi.org/api/ip');
       const timeData = await timeResponse.json();
       const now = new Date(timeData.datetime).getTime();
 
-      // جلب بيانات العميل من Firestore
       const docRef = doc(db, "subscriptions", CLIENT_ID);
       const docSnap = await getDoc(docRef);
 
@@ -1338,21 +1336,20 @@
           showLockScreen("انتهت مدة اشتراكك في النظام. يرجى التواصل مع الدعم الفني لتجديد الاشتراك.");
         }
       } else {
-        // إنتاج اشتراك تجريبي تلقائي لمدة 7 أيام للعميل عند التشغيل لأول مرة
         const defaultExpiry = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         await setDoc(docRef, {
-          clientName: "مركز التجميل",
+          clientName: "صيدلية الحياة",
           expiryDate: defaultExpiry,
           isActive: true,
           createdAt: serverTimestamp()
         });
       }
     } catch (error) {
-      console.warn("تنبيه: تعذر التحقق السحابي، يتم تشغيل النظام في الوضع المحلي المؤقت.", error);
+      console.warn("تنبيه: تعذر التحقق السحابي، يعمل النظام بالوضع المحلي المؤقت.", error);
     }
   }
 
-  // إظهار شاشة القفل عند انتهاء الاشتراك
+  // شاشة القفل عند انتهاء الاشتراك
   function showLockScreen(message) {
     const lockOverlay = document.createElement('div');
     lockOverlay.id = 'subscription-lock-screen';
@@ -1363,7 +1360,7 @@
       color: #fff; font-family: sans-serif; text-align: center; padding: 20px;
     `;
     lockOverlay.innerHTML = `
-      <div style="background: #1e293b; padding: 40px; border-radius: 16px; border: 1px solid #334155; max-width: 450px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+      <div style="background: #1e293b; padding: 35px; border-radius: 16px; border: 1px solid #334155; max-width: 450px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
         <div style="font-size: 50px; margin-bottom: 15px;">🔒</div>
         <h2 style="color: #ef4444; margin-bottom: 10px;">عذراً، الاشتراك غير مفعل</h2>
         <p style="color: #94a3b8; line-height: 1.6; margin-bottom: 25px;">${message}</p>
@@ -1371,47 +1368,124 @@
           تجديد الاشتراك عبر الواتساب 💬
         </a>
         <div>
-          <button id="admin-login-btn" style="background: transparent; border: none; color: #64748b; text-decoration: underline; cursor: pointer; font-size: 12px; margin-top: 10px;">
-            دخول الأدمن (Super Admin)
+          <button id="admin-login-btn" style="background: transparent; border: none; color: #64748b; text-decoration: underline; cursor: pointer; font-size: 13px; margin-top: 10px;">
+            دخول لوحة التحكم (Super Admin)
           </button>
         </div>
       </div>
     `;
     document.body.appendChild(lockOverlay);
-
     document.getElementById('admin-login-btn').addEventListener('click', openAdminPanel);
   }
 
-  // لوحة تحكم الأدمن لتمديد الاشتراكات
+  // لوحة تحكم الأدمن الشاملة لجميع المشتركين
   window.openAdminPanel = async function() {
-    const pass = prompt("أدخل رمز المرور الخاص بالـ Super Admin:");
+    const pass = prompt("أدخل رمز المرور السري للـ Super Admin:");
     if (pass !== ADMIN_PASSCODE) {
       alert("رمز المرور غير صحيح!");
       return;
     }
 
-    const docRef = doc(db, "subscriptions", CLIENT_ID);
-    const docSnap = await getDoc(docRef);
-    const currentData = docSnap.exists() ? docSnap.data() : { expiryDate: 'غير محدد', isActive: true };
+    // جلب جميع المشتركين من Firestore
+    const querySnapshot = await getDocs(collection(db, "subscriptions"));
+    let clientsHtml = "";
 
-    const newExpiry = prompt(`تاريخ الانتهاء الحالي: ${currentData.expiryDate}\nأدخل تاريخ الانتهاء الجديد (YYYY-MM-DD):`, currentData.expiryDate);
-    
-    if (newExpiry) {
-      await setDoc(docRef, {
-        clientName: "مركز التجميل",
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const id = docSnap.id;
+      const statusText = data.isActive ? "✅ مفعل" : "❌ معطل";
+      
+      clientsHtml += `
+        <tr style="border-bottom: 1px solid #334155;">
+          <td style="padding: 10px; text-align: right;"><b>${data.clientName || 'غير مسمى'}</b><br><small style="color:#94a3b8;">${id}</small></td>
+          <td style="padding: 10px; text-align: center;">${data.expiryDate || 'غير محدد'}</td>
+          <td style="padding: 10px; text-align: center;">${statusText}</td>
+          <td style="padding: 10px; text-align: center;">
+            <button onclick="editClientData('${id}', '${data.clientName || ''}', '${data.expiryDate || ''}', ${data.isActive})" style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin-bottom: 4px;">تعديل / تمديد</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    const modal = document.createElement('div');
+    modal.id = 'admin-modal-panel';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.85); z-index: 1000000;
+      display: flex; align-items: center; justify-content: center;
+      font-family: sans-serif; dir: rtl;
+    `;
+    modal.innerHTML = `
+      <div style="background: #0f172a; color: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 650px; max-height: 85vh; overflow-y: auto; border: 1px solid #334155; direction: rtl; text-align: right;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="margin: 0; color: #38bdf8;">👑 لوحة إدارة المشتركين (Super Admin)</h3>
+          <button onclick="document.getElementById('admin-modal-panel').remove()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">إغلاق</button>
+        </div>
+
+        <button onclick="addNewClientPrompt()" style="background: #22c55e; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 20px;">
+          ➕ إضافة مشترك جديد
+        </button>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background: #1e293b; color: #94a3b8;">
+              <th style="padding: 10px; text-align: right;">العميل / المعرّف</th>
+              <th style="padding: 10px; text-align: center;">الانتهاء</th>
+              <th style="padding: 10px; text-align: center;">الحالة</th>
+              <th style="padding: 10px; text-align: center;">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${clientsHtml}
+          </tbody>
+        </table>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  };
+
+  // وظيفة تعديل بيانات مشترك معين
+  window.editClientData = async function(clientId, currentName, currentExpiry, currentStatus) {
+    const newName = prompt("اسم الصيدلية / العميل:", currentName) || currentName;
+    const newExpiry = prompt("تاريخ الانتهاء الجديد (YYYY-MM-DD):", currentExpiry);
+    if (!newExpiry) return;
+
+    const toggleStatus = confirm(`الحالة الحالية: ${currentStatus ? 'مفعل' : 'معطل'}\n\nهل تريد تفعيل الحساب؟ (اضغط موافق للتفعيل / إلغاء للتعطيل)`);
+
+    await setDoc(doc(db, "subscriptions", clientId), {
+      clientName: newName,
+      expiryDate: newExpiry,
+      isActive: toggleStatus,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    alert("تم تحديث بيانات المشترك بنجاح!");
+    document.getElementById('admin-modal-panel').remove();
+    location.reload();
+  };
+
+  // وظيفة إضافة مشترك جديد
+  window.addNewClientPrompt = async function() {
+    const newId = prompt("أدخل معرّف العميل الجديد (مثال: client_002):");
+    if (!newId) return;
+
+    const newName = prompt("اسم الصيدلية أو مركز التجميل:");
+    const newExpiry = prompt("تاريخ انتهاء الاشتراك (YYYY-MM-DD):", "2027-01-01");
+
+    if (newId && newExpiry) {
+      await setDoc(doc(db, "subscriptions", newId), {
+        clientName: newName || "عميل جديد",
         expiryDate: newExpiry,
         isActive: true,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+        createdAt: serverTimestamp()
+      });
 
-            alert("تم تحديث الاشتراك بنجاح!");
+      alert("تمت إضافة المشترك الجديد بنجاح!");
+      document.getElementById('admin-modal-panel').remove();
       location.reload();
     }
   };
 
-  // تشغيل الفحص فور تحميل عناصر الصفحة
+  // تشغيل الفحص
   window.addEventListener('DOMContentLoaded', checkSubscription);
 </script>
-
-</body>
-</html>
