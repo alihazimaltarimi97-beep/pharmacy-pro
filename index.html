@@ -1295,5 +1295,123 @@
             if(btn) { btn.classList.remove('text-[#7e6041]', 'bg-white', 'border', 'border-[#e6d7c3]'); btn.classList.add('bg-[#7e6041]', 'text-white'); }
         }
     </script>
+    <!-- Firebase SDKs & Subscription System -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // إعدادات مشروعك في Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQkCzEaOtTt44xVXesnYrHcnJcCc2s9qs",
+    authDomain: "alialtarimi-f5dc6.firebaseapp.com",
+    projectId: "alialtarimi-f5dc6",
+    storageBucket: "alialtarimi-f5dc6.firebasestorage.app",
+    messagingSenderId: "379447799209",
+    appId: "1:379447799209:web:90403bafe8aabb25e4a8b8"
+  };
+
+  // تهيئة الفايربيس وقاعدة البيانات
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // معرف المشترك ورمز دخول الأدمن
+  const CLIENT_ID = "client_001"; // معرّف العميل
+  const ADMIN_PASSCODE = "123456"; // رمز المرور الخاص بك كـ Super Admin
+
+  // فحص حالة الاشتراك عند فتح التطبيق
+  async function checkSubscription() {
+    try {
+      // جلب الوقت الحالي الموثوق من سيرفر عالمي لمنع التلاعب بساعة الجهاز
+      const timeResponse = await fetch('https://worldtimeapi.org/api/ip');
+      const timeData = await timeResponse.json();
+      const now = new Date(timeData.datetime).getTime();
+
+      // جلب بيانات العميل من Firestore
+      const docRef = doc(db, "subscriptions", CLIENT_ID);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const subData = docSnap.data();
+        const expiryDate = new Date(subData.expiryDate).getTime();
+
+        if (now > expiryDate || subData.isActive === false) {
+          showLockScreen("انتهت مدة اشتراكك في النظام. يرجى التواصل مع الدعم الفني لتجديد الاشتراك.");
+        }
+      } else {
+        // إنتاج اشتراك تجريبي تلقائي لمدة 7 أيام للعميل عند التشغيل لأول مرة
+        const defaultExpiry = new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        await setDoc(docRef, {
+          clientName: "مركز التجميل",
+          expiryDate: defaultExpiry,
+          isActive: true,
+          createdAt: serverTimestamp()
+        });
+      }
+    } catch (error) {
+      console.warn("تنبيه: تعذر التحقق السحابي، يتم تشغيل النظام في الوضع المحلي المؤقت.", error);
+    }
+  }
+
+  // إظهار شاشة القفل عند انتهاء الاشتراك
+  function showLockScreen(message) {
+    const lockOverlay = document.createElement('div');
+    lockOverlay.id = 'subscription-lock-screen';
+    lockOverlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.98); z-index: 999999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #fff; font-family: sans-serif; text-align: center; padding: 20px;
+    `;
+    lockOverlay.innerHTML = `
+      <div style="background: #1e293b; padding: 40px; border-radius: 16px; border: 1px solid #334155; max-width: 450px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+        <div style="font-size: 50px; margin-bottom: 15px;">🔒</div>
+        <h2 style="color: #ef4444; margin-bottom: 10px;">عذراً، الاشتراك غير مفعل</h2>
+        <p style="color: #94a3b8; line-height: 1.6; margin-bottom: 25px;">${message}</p>
+        <a href="https://wa.me/9640000000000" target="_blank" style="background: #22c55e; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin-bottom: 15px;">
+          تجديد الاشتراك عبر الواتساب 💬
+        </a>
+        <div>
+          <button id="admin-login-btn" style="background: transparent; border: none; color: #64748b; text-decoration: underline; cursor: pointer; font-size: 12px; margin-top: 10px;">
+            دخول الأدمن (Super Admin)
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(lockOverlay);
+
+    document.getElementById('admin-login-btn').addEventListener('click', openAdminPanel);
+  }
+
+  // لوحة تحكم الأدمن لتمديد الاشتراكات
+  window.openAdminPanel = async function() {
+    const pass = prompt("أدخل رمز المرور الخاص بالـ Super Admin:");
+    if (pass !== ADMIN_PASSCODE) {
+      alert("رمز المرور غير صحيح!");
+      return;
+    }
+
+    const docRef = doc(db, "subscriptions", CLIENT_ID);
+    const docSnap = await getDoc(docRef);
+    const currentData = docSnap.exists() ? docSnap.data() : { expiryDate: 'غير محدد', isActive: true };
+
+    const newExpiry = prompt(`تاريخ الانتهاء الحالي: ${currentData.expiryDate}\nأدخل تاريخ الانتهاء الجديد (YYYY-MM-DD):`, currentData.expiryDate);
+    
+    if (newExpiry) {
+      await setDoc(docRef, {
+        clientName: "مركز التجميل",
+        expiryDate: newExpiry,
+        isActive: true,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+            alert("تم تحديث الاشتراك بنجاح!");
+      location.reload();
+    }
+  };
+
+  // تشغيل الفحص فور تحميل عناصر الصفحة
+  window.addEventListener('DOMContentLoaded', checkSubscription);
+</script>
+
 </body>
 </html>
